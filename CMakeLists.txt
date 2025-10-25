@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.15)
 
 project(stellabellum C CXX)
 
@@ -16,7 +16,9 @@ set(SWG_GAME_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/game)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
-include_directories(/usr/include/i386-linux-gnu)
+if (UNIX)
+    include_directories(/usr/include/i386-linux-gnu)
+endif ()
 
 find_package(BISON REQUIRED)
 find_package(FLEX REQUIRED)
@@ -42,6 +44,25 @@ set(CMAKE_CXX_FLAGS_MINSIZEREL "")
 
 # I'll be honest, win32 is probably very very broken and won't build - it will need worked on so that MSVC uses
 # the vs2013+ STL instead of stlport, and probably will thus need removal/modification/addition of TONS of the ifdef blocks for WIN32
+if (MSVC)
+    # Ensure the build remains a 32-bit build when using the Visual Studio
+    # generator.  Visual Studio 2019 defaults to the host architecture, so we
+    # explicitly validate the configuration and provide helpful guidance.
+    if (NOT CMAKE_SIZEOF_VOID_P EQUAL 4)
+        message(FATAL_ERROR "SWG+ only supports 32-bit builds. Re-configure CMake with '-A Win32'.")
+    endif ()
+
+    # Prefer 32-bit library lookup paths to avoid accidentally linking against
+    # 64-bit vendor SDKs when both are installed on the build host.
+    set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS OFF)
+    set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB32_PATHS ON)
+
+    # Force the static runtime flags we historically required without relying
+    # on deprecated CMake variables.  This is supported in CMake 3.15+, which
+    # we require above for Visual Studio 2019 generator support.
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif ()
+
 if (WIN32)
     find_package(Iconv REQUIRED)
 
