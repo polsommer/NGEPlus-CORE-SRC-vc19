@@ -15,6 +15,7 @@ Prerequisites
 C++ Compiler (supporting C++11 or later)
 CMake for building the project
 Git for version control
+Visual Studio 2019 (for Windows builds)
 Building SWG+
 Clone the Repository:
 
@@ -34,6 +35,16 @@ Build the Project:
 bash
 Copy code
 make
+Windows (Visual Studio 2019) Build:
+
+```
+mkdir build
+cd build
+cmake -G "Visual Studio 16 2019" -A Win32 ..
+cmake --build . --config Release
+```
+
+> **Note:** SWG+ only supports 32-bit builds. Ensure the `-A Win32` switch is present when generating Visual Studio project files.
 Run the Server:
 
 bash
